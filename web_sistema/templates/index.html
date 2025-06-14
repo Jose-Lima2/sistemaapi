@@ -249,13 +249,150 @@
                 width: 200px;
             }
         }
+
+        /* Sistema de Notificações */
+        .notification-container {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 9999;
+            max-width: 350px;
+        }
+
+        .notification {
+            background: linear-gradient(135deg, #ff6b35, #f7931e);
+            color: white;
+            padding: 15px 20px;
+            border-radius: 12px;
+            margin-bottom: 10px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            animation: slideIn 0.5s ease-out;
+            position: relative;
+            border-left: 5px solid #fff;
+        }
+
+        .notification.success {
+            background: linear-gradient(135deg, #4CAF50, #45a049);
+        }
+
+        .notification.warning {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+        }
+
+        .notification.error {
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+        }
+
+        .notification-close {
+            position: absolute;
+            top: 5px;
+            right: 10px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .notification-close:hover {
+            opacity: 1;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        /* Configurações de Notificação */
+        .notification-settings {
+            background: white;
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .notification-toggle {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 50px;
+            height: 25px;
+            background: #ccc;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+
+        .toggle-switch.active {
+            background: #4CAF50;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 21px;
+            height: 21px;
+            background: white;
+            border-radius: 50%;
+            transition: transform 0.3s;
+        }
+
+        .toggle-switch.active .toggle-slider {
+            transform: translateX(25px);
+        }
     </style>
 </head>
 <body>
+    <!-- Container de Notificações -->
+    <div id="notificationContainer" class="notification-container"></div>
+
     <div class="container">
         <div class="header">
             <h1>🎯 Sistema de Sinais</h1>
             <p>Análise automática de padrões para Double</p>
+        </div>
+
+        <!-- Configurações de Notificação -->
+        <div class="notification-settings">
+            <h3 style="margin-bottom: 15px;">🔔 Configurações de Notificação</h3>
+            <div class="notification-toggle">
+                <div id="toggleNotificacoes" class="toggle-switch active" onclick="toggleNotificacoes()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <label>Notificações Visuais</label>
+            </div>
+            <div class="notification-toggle">
+                <div id="toggleSom" class="toggle-switch active" onclick="toggleSom()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <label>Notificações Sonoras</label>
+            </div>
+            <div class="notification-toggle">
+                <div id="toggleBrowser" class="toggle-switch" onclick="toggleBrowserNotifications()">
+                    <div class="toggle-slider"></div>
+                </div>
+                <label>Notificações do Navegador</label>
+            </div>
         </div>
 
         <div class="controls">
@@ -313,6 +450,10 @@
                     <option value="sequencia">Sequência de Cores</option>
                     <option value="numero">Número Específico</option>
                     <option value="contagem">Contagem de Cores</option>
+                    <option value="minutos">Estratégia por Minutos</option>
+                    <option value="pedras">Estratégia por Número de Pedras</option>
+                    <option value="estrategia21">Estratégia 21 (Soma = 21)</option>
+                    <option value="branco">Estratégias de Branco</option>
                 </select>
             </div>
 
@@ -372,11 +513,167 @@
                 </div>
             </div>
 
+            <div id="camposMinutos" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Intervalo de Minutos:</label>
+                    <input type="number" id="intervaloMinutos" min="1" max="60" placeholder="Ex: 5" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <small style="color: #666; font-size: 0.9rem;">Apostar a cada X minutos</small>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Condição para Apostar:</label>
+                    <select id="condicaoMinutos" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="sempre">Sempre apostar no intervalo</option>
+                        <option value="sem_branco">Apenas se não saiu branco no intervalo</option>
+                        <option value="maioria_vermelha">Se maioria vermelha no intervalo</option>
+                        <option value="maioria_preta">Se maioria preta no intervalo</option>
+                    </select>
+                </div>
+            </div>
+
+            <div id="camposPedras" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Número de Pedras:</label>
+                    <input type="number" id="numeroPedras" min="5" max="100" placeholder="Ex: 20" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <small style="color: #666; font-size: 0.9rem;">Analisar últimas X pedras</small>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Condição para Sinal:</label>
+                    <select id="condicaoPedras" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="sem_branco">Sem branco nas últimas X pedras</option>
+                        <option value="maioria_vermelha">Maioria vermelha nas últimas X pedras</option>
+                        <option value="maioria_preta">Maioria preta nas últimas X pedras</option>
+                        <option value="sequencia_vermelha">Sequência de vermelhos</option>
+                        <option value="sequencia_preta">Sequência de pretos</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Percentual Mínimo (%):</label>
+                    <input type="number" id="percentualMinimo" min="50" max="100" value="70" placeholder="Ex: 70" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <small style="color: #666; font-size: 0.9rem;">Percentual mínimo da condição para gerar sinal</small>
+                </div>
+            </div>
+
+            <div id="camposEstrategia21" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Quantidade de Pedras para Somar:</label>
+                    <select id="quantidadePedrasSoma" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                        <option value="2">2 pedras</option>
+                        <option value="3">3 pedras</option>
+                        <option value="ambos">2 ou 3 pedras</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Pedras para Esperar após Soma 21:</label>
+                    <input type="number" id="pedrasEsperarSoma21" min="0" max="10" value="1" placeholder="Ex: 1" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <small style="color: #666; font-size: 0.9rem;">Quantas pedras esperar após detectar soma = 21</small>
+                </div>
+            </div>
+
+            <div id="camposBranco" style="display: none;">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: bold;">Condições para Sinal de Branco:</label>
+                    <div style="border: 1px solid #ddd; border-radius: 4px; padding: 15px; background: #f9f9f9;">
+                        
+                        <!-- Condições de Cores -->
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">🎨 Condições de Cores (opcional):</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="usarCores" onchange="toggleCamposBranco()">
+                                <label for="usarCores">Usar condições de cores</label>
+                            </div>
+                            <div id="condicoesCores" style="display: none;">
+                                <select id="condicaoCoresBranco" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                                    <option value="sequencia_vermelha">Sequência de vermelhos</option>
+                                    <option value="sequencia_preta">Sequência de pretos</option>
+                                    <option value="alternancia">Alternância V-P-V-P</option>
+                                    <option value="maioria_vermelha">Maioria vermelha</option>
+                                    <option value="maioria_preta">Maioria preta</option>
+                                    <option value="sem_branco">Sem branco há X pedras</option>
+                                </select>
+                                <input type="number" id="quantidadeCores" min="2" max="20" value="5" placeholder="Quantidade" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                        </div>
+
+                        <!-- Condições de Números -->
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">🔢 Condições de Números (opcional):</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="usarNumeros" onchange="toggleCamposBranco()">
+                                <label for="usarNumeros">Usar condições de números</label>
+                            </div>
+                            <div id="condicoesNumeros" style="display: none;">
+                                <select id="condicaoNumerosBranco" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                                    <option value="numero_especifico">Número específico apareceu</option>
+                                    <option value="sequencia_numeros">Sequência de números</option>
+                                    <option value="numeros_pares">Maioria números pares</option>
+                                    <option value="numeros_impares">Maioria números ímpares</option>
+                                    <option value="numeros_baixos">Maioria números baixos (1-7)</option>
+                                    <option value="numeros_altos">Maioria números altos (8-14)</option>
+                                </select>
+                                <input type="text" id="numerosEspecificos" placeholder="Ex: 7,13,2 ou deixe vazio" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                        </div>
+
+                        <!-- Condições de Soma -->
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">➕ Condições de Soma (opcional):</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="usarSoma" onchange="toggleCamposBranco()">
+                                <label for="usarSoma">Usar condições de soma</label>
+                            </div>
+                            <div id="condicoesSoma" style="display: none;">
+                                <select id="condicaoSomaBranco" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                                    <option value="soma_especifica">Soma específica</option>
+                                    <option value="soma_par">Soma par</option>
+                                    <option value="soma_impar">Soma ímpar</option>
+                                    <option value="soma_alta">Soma alta (>15)</option>
+                                    <option value="soma_baixa">Soma baixa (<15)</option>
+                                </select>
+                                <input type="number" id="valorSoma" min="2" max="42" placeholder="Ex: 21" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                                <input type="number" id="pedrasSoma" min="2" max="5" value="2" placeholder="Pedras para somar" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-top: 5px;">
+                            </div>
+                        </div>
+
+                        <!-- Condições de Tempo -->
+                        <div style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 5px; font-weight: bold;">⏰ Condições de Tempo (opcional):</label>
+                            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                                <input type="checkbox" id="usarTempo" onchange="toggleCamposBranco()">
+                                <label for="usarTempo">Usar condições de tempo</label>
+                            </div>
+                            <div id="condicoesTempo" style="display: none;">
+                                <select id="condicaoTempoBranco" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; margin-bottom: 10px;">
+                                    <option value="minuto_par">Minuto par</option>
+                                    <option value="minuto_impar">Minuto ímpar</option>
+                                    <option value="hora_especifica">Hora específica</option>
+                                    <option value="intervalo_tempo">Intervalo de tempo</option>
+                                    <option value="soma_hora_minuto">Soma hora + minuto</option>
+                                </select>
+                                <input type="text" id="valorTempo" placeholder="Ex: 14:30 ou 5 (minutos)" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
             <div style="margin-bottom: 15px;">
                 <label style="display: block; margin-bottom: 5px; font-weight: bold;">Apostar em:</label>
                 <select id="apostarEm" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
                     <option value="vermelho">🔴 Vermelho</option>
                     <option value="preto">⚫ Preto</option>
+                    <option value="branco">⚪ Branco</option>
+                </select>
+            </div>
+
+            <div style="margin-bottom: 15px;">
+                <label style="display: block; margin-bottom: 5px; font-weight: bold;">Sistema de Gale:</label>
+                <select id="sistemaGale" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <option value="G1">G1 - Apenas 1 tentativa</option>
+                    <option value="G2">G2 - Até 2 tentativas</option>
+                    <option value="G3">G3 - Até 3 tentativas</option>
+                    <option value="G4">G4 - Até 4 tentativas</option>
+                    <option value="G5">G5 - Até 5 tentativas</option>
                 </select>
             </div>
 
@@ -619,7 +916,12 @@
                         const statusClass = estrategia.ativa ? 'text-success' : 'text-muted';
                         const statusText = estrategia.ativa ? 'Ativa' : 'Inativa';
                         const tipoTexto = estrategia.tipo === 'sequencia_cores' ? 'Sequência' : 
-                                         estrategia.tipo === 'numero_especifico' ? 'Número' : 'Contagem';
+                                         estrategia.tipo === 'numero_especifico' ? 'Número' : 
+                                         estrategia.tipo === 'contagem' ? 'Contagem' :
+                                         estrategia.tipo === 'minutos' ? 'Minutos' :
+                                         estrategia.tipo === 'pedras' ? 'Pedras' :
+                                         estrategia.tipo === 'estrategia21' ? 'Estratégia 21' :
+                                         estrategia.tipo === 'branco' ? 'Branco' : 'Personalizada';
                         
                         return `
                             <div class="historico-item" style="margin-bottom: 10px;">
@@ -666,6 +968,8 @@
             document.getElementById('camposSequencia').style.display = 'none';
             document.getElementById('camposNumero').style.display = 'none';
             document.getElementById('camposContagem').style.display = 'none';
+            document.getElementById('camposMinutos').style.display = 'none';
+            document.getElementById('camposPedras').style.display = 'none';
             
             // Mostrar campos do tipo selecionado
             if (tipo === 'sequencia') {
@@ -674,6 +978,10 @@
                 document.getElementById('camposNumero').style.display = 'block';
             } else if (tipo === 'contagem') {
                 document.getElementById('camposContagem').style.display = 'block';
+            } else if (tipo === 'minutos') {
+                document.getElementById('camposMinutos').style.display = 'block';
+            } else if (tipo === 'pedras') {
+                document.getElementById('camposPedras').style.display = 'block';
             }
         }
 
@@ -723,7 +1031,12 @@
             document.getElementById('pedrasEsperar').value = '';
             document.getElementById('quantidadeMinima').value = '';
             document.getElementById('janelaAnalise').value = '10';
+            document.getElementById('intervaloMinutos').value = '';
+            document.getElementById('numeroPedras').value = '';
+            document.getElementById('percentualMinimo').value = '70';
             document.getElementById('confiancaEstrategia').value = '70';
+            document.getElementById('sistemaGale').value = 'G1';
+            document.getElementById('apostarEm').value = 'vermelho';
             sequenciaAtual = [];
             atualizarVisualizacaoSequencia();
             alterarTipoEstrategia();
@@ -735,6 +1048,7 @@
             const descricao = document.getElementById('descricaoEstrategia').value.trim();
             const apostarEm = document.getElementById('apostarEm').value;
             const confianca = parseInt(document.getElementById('confiancaEstrategia').value);
+            const sistemaGale = document.getElementById('sistemaGale').value;
 
             if (!nome) {
                 alert('❌ Por favor, insira um nome para a estratégia!');
@@ -746,7 +1060,8 @@
                 nome: nome,
                 descricao: descricao,
                 apostar_em: apostarEm,
-                confianca: confianca
+                confianca: confianca,
+                sistema_gale: sistemaGale
             };
 
             // Adicionar campos específicos do tipo
@@ -784,6 +1099,78 @@
                 dadosEstrategia.cor_contar = corContar;
                 dadosEstrategia.quantidade_minima = quantidadeMinima;
                 dadosEstrategia.janela_analise = janelaAnalise;
+            } else if (tipo === 'minutos') {
+                const intervaloMinutos = parseInt(document.getElementById('intervaloMinutos').value);
+                const condicaoMinutos = document.getElementById('condicaoMinutos').value;
+                
+                if (isNaN(intervaloMinutos) || intervaloMinutos < 1) {
+                    alert('❌ Por favor, insira um intervalo de minutos válido!');
+                    return;
+                }
+                
+                dadosEstrategia.intervalo_minutos = intervaloMinutos;
+                dadosEstrategia.condicao_minutos = condicaoMinutos;
+            } else if (tipo === 'pedras') {
+                const numeroPedras = parseInt(document.getElementById('numeroPedras').value);
+                const condicaoPedras = document.getElementById('condicaoPedras').value;
+                const percentualMinimo = parseInt(document.getElementById('percentualMinimo').value);
+                
+                if (isNaN(numeroPedras) || numeroPedras < 5) {
+                    alert('❌ Por favor, insira um número de pedras válido!');
+                    return;
+                }
+                
+                dadosEstrategia.numero_pedras = numeroPedras;
+                dadosEstrategia.condicao_pedras = condicaoPedras;
+                dadosEstrategia.percentual_minimo = percentualMinimo;
+            } else if (tipo === 'estrategia21') {
+                const quantidadePedrasSoma = document.getElementById('quantidadePedrasSoma').value;
+                const pedrasEsperarSoma21 = parseInt(document.getElementById('pedrasEsperarSoma21').value);
+                
+                dadosEstrategia.quantidade_pedras_soma = quantidadePedrasSoma;
+                dadosEstrategia.pedras_esperar_soma21 = pedrasEsperarSoma21;
+            } else if (tipo === 'branco') {
+                const condicoesBranco = {};
+                
+                // Condições de cores
+                if (document.getElementById('usarCores').checked) {
+                    condicoesBranco.cores = {
+                        condicao: document.getElementById('condicaoCoresBranco').value,
+                        quantidade: parseInt(document.getElementById('quantidadeCores').value)
+                    };
+                }
+                
+                // Condições de números
+                if (document.getElementById('usarNumeros').checked) {
+                    condicoesBranco.numeros = {
+                        condicao: document.getElementById('condicaoNumerosBranco').value,
+                        numeros_especificos: document.getElementById('numerosEspecificos').value
+                    };
+                }
+                
+                // Condições de soma
+                if (document.getElementById('usarSoma').checked) {
+                    condicoesBranco.soma = {
+                        condicao: document.getElementById('condicaoSomaBranco').value,
+                        valor: parseInt(document.getElementById('valorSoma').value) || null,
+                        pedras: parseInt(document.getElementById('pedrasSoma').value)
+                    };
+                }
+                
+                // Condições de tempo
+                if (document.getElementById('usarTempo').checked) {
+                    condicoesBranco.tempo = {
+                        condicao: document.getElementById('condicaoTempoBranco').value,
+                        valor: document.getElementById('valorTempo').value
+                    };
+                }
+                
+                if (Object.keys(condicoesBranco).length === 0) {
+                    alert('❌ Por favor, selecione pelo menos uma condição para a estratégia de branco!');
+                    return;
+                }
+                
+                dadosEstrategia.condicoes_branco = condicoesBranco;
             }
 
             // Enviar para o servidor
@@ -850,10 +1237,223 @@
             }
         }
 
+        // SISTEMA DE NOTIFICAÇÕES
+        let notificacoesAtivas = true;
+        let somAtivo = true;
+        let notificacoesBrowser = false;
+        let ultimoSinalNotificado = null;
+
+        function mostrarNotificacao(titulo, mensagem, tipo = 'success', duracao = 5000) {
+            if (!notificacoesAtivas) return;
+
+            const container = document.getElementById('notificationContainer');
+            const notificationId = 'notification_' + Date.now();
+            
+            const notification = document.createElement('div');
+            notification.className = `notification ${tipo}`;
+            notification.id = notificationId;
+            notification.innerHTML = `
+                <button class="notification-close" onclick="fecharNotificacao('${notificationId}')">×</button>
+                <div style="font-weight: bold; margin-bottom: 5px;">${titulo}</div>
+                <div>${mensagem}</div>
+            `;
+            
+            container.appendChild(notification);
+            
+            // Som de notificação
+            if (somAtivo) {
+                tocarSomNotificacao(tipo);
+            }
+            
+            // Notificação do navegador
+            if (notificacoesBrowser && 'Notification' in window && Notification.permission === 'granted') {
+                new Notification(titulo, {
+                    body: mensagem,
+                    icon: '/favicon.ico'
+                });
+            }
+            
+            // Auto-remover após duração
+            setTimeout(() => {
+                fecharNotificacao(notificationId);
+            }, duracao);
+        }
+
+        function fecharNotificacao(id) {
+            const notification = document.getElementById(id);
+            if (notification) {
+                notification.remove();
+            }
+        }
+
+        function tocarSomNotificacao(tipo) {
+            // Criar som usando Web Audio API
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            // Diferentes frequências para diferentes tipos
+            const frequencias = {
+                'success': [800, 1000, 1200],
+                'warning': [600, 800],
+                'error': [400, 300, 200]
+            };
+            
+            const freqs = frequencias[tipo] || frequencias['success'];
+            
+            freqs.forEach((freq, index) => {
+                setTimeout(() => {
+                    oscillator.frequency.setValueAtTime(freq, audioContext.currentTime);
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+                }, index * 100);
+            });
+            
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.3);
+        }
+
+        function toggleNotificacoes() {
+            notificacoesAtivas = !notificacoesAtivas;
+            const toggle = document.getElementById('toggleNotificacoes');
+            toggle.classList.toggle('active', notificacoesAtivas);
+            
+            if (notificacoesAtivas) {
+                mostrarNotificacao('🔔 Notificações Ativadas', 'Você receberá alertas de novos sinais', 'success', 2000);
+            }
+        }
+
+        function toggleSom() {
+            somAtivo = !somAtivo;
+            const toggle = document.getElementById('toggleSom');
+            toggle.classList.toggle('active', somAtivo);
+            
+            if (somAtivo) {
+                tocarSomNotificacao('success');
+            }
+        }
+
+        function toggleBrowserNotifications() {
+            if ('Notification' in window) {
+                if (Notification.permission === 'default') {
+                    Notification.requestPermission().then(permission => {
+                        notificacoesBrowser = permission === 'granted';
+                        const toggle = document.getElementById('toggleBrowser');
+                        toggle.classList.toggle('active', notificacoesBrowser);
+                        
+                        if (notificacoesBrowser) {
+                            mostrarNotificacao('🌐 Notificações do Navegador', 'Ativadas com sucesso!', 'success', 2000);
+                        }
+                    });
+                } else if (Notification.permission === 'granted') {
+                    notificacoesBrowser = !notificacoesBrowser;
+                    const toggle = document.getElementById('toggleBrowser');
+                    toggle.classList.toggle('active', notificacoesBrowser);
+                } else {
+                    alert('❌ Notificações do navegador foram negadas. Ative nas configurações do navegador.');
+                }
+            } else {
+                alert('❌ Seu navegador não suporta notificações.');
+            }
+        }
+
+        // FUNÇÕES PARA NOVAS ESTRATÉGIAS
+        function alterarTipoEstrategia() {
+            const tipo = document.getElementById('tipoEstrategia').value;
+            
+            // Ocultar todos os campos específicos
+            document.getElementById('camposSequencia').style.display = 'none';
+            document.getElementById('camposNumero').style.display = 'none';
+            document.getElementById('camposContagem').style.display = 'none';
+            document.getElementById('camposMinutos').style.display = 'none';
+            document.getElementById('camposPedras').style.display = 'none';
+            document.getElementById('camposEstrategia21').style.display = 'none';
+            document.getElementById('camposBranco').style.display = 'none';
+            
+            // Mostrar campos do tipo selecionado
+            if (tipo === 'sequencia') {
+                document.getElementById('camposSequencia').style.display = 'block';
+            } else if (tipo === 'numero') {
+                document.getElementById('camposNumero').style.display = 'block';
+            } else if (tipo === 'contagem') {
+                document.getElementById('camposContagem').style.display = 'block';
+            } else if (tipo === 'minutos') {
+                document.getElementById('camposMinutos').style.display = 'block';
+            } else if (tipo === 'pedras') {
+                document.getElementById('camposPedras').style.display = 'block';
+            } else if (tipo === 'estrategia21') {
+                document.getElementById('camposEstrategia21').style.display = 'block';
+            } else if (tipo === 'branco') {
+                document.getElementById('camposBranco').style.display = 'block';
+            }
+        }
+
+        function toggleCamposBranco() {
+            const usarCores = document.getElementById('usarCores').checked;
+            const usarNumeros = document.getElementById('usarNumeros').checked;
+            const usarSoma = document.getElementById('usarSoma').checked;
+            const usarTempo = document.getElementById('usarTempo').checked;
+            
+            document.getElementById('condicoesCores').style.display = usarCores ? 'block' : 'none';
+            document.getElementById('condicoesNumeros').style.display = usarNumeros ? 'block' : 'none';
+            document.getElementById('condicoesSoma').style.display = usarSoma ? 'block' : 'none';
+            document.getElementById('condicoesTempo').style.display = usarTempo ? 'block' : 'none';
+        }
+
+        // Atualizar função atualizarSinalAtivo para incluir notificações
+        function atualizarSinalAtivo(sinal, aguardando) {
+            const container = document.getElementById('sinalAtivo');
+            
+            if (sinal && aguardando) {
+                // Verificar se é um novo sinal para notificar
+                const sinalId = `${sinal.estrategia}_${sinal.confianca}_${sinal.entrada}`;
+                if (ultimoSinalNotificado !== sinalId) {
+                    ultimoSinalNotificado = sinalId;
+                    
+                    const emoji = sinal.entrada === 'vermelho' ? '🔴' : sinal.entrada === 'preto' ? '⚫' : '⚪';
+                    mostrarNotificacao(
+                        '🚨 NOVO SINAL DETECTADO!',
+                        `${emoji} ${sinal.estrategia} - Confiança: ${sinal.confianca}%`,
+                        'warning',
+                        8000
+                    );
+                }
+                
+                const emoji = sinal.entrada === 'vermelho' ? '🔴' : sinal.entrada === 'preto' ? '⚫' : '⚪';
+                container.innerHTML = `
+                    <div class="sinal-ativo">
+                        <div style="font-size: 1.2rem; font-weight: bold;">🚨 SINAL DETECTADO!</div>
+                        <div class="sinal-emoji">${emoji} + ⚪</div>
+                        <div style="margin: 10px 0;">
+                            <strong>Confiança:</strong> ${sinal.confianca}%<br>
+                            <strong>Estratégia:</strong> ${sinal.estrategia}<br>
+                            <strong>Sistema:</strong> ${sinal.gale}
+                        </div>
+                        <div style="font-size: 0.9rem; color: #666;">⏰ Aguardando próximo resultado...</div>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = '';
+                ultimoSinalNotificado = null;
+            }
+        }
+
         // Inicializar
         document.addEventListener('DOMContentLoaded', function() {
             atualizarStatus();
             intervalId = setInterval(atualizarStatus, 3000);
+            
+            // Solicitar permissão para notificações do navegador
+            if ('Notification' in window && Notification.permission === 'default') {
+                setTimeout(() => {
+                    if (confirm('🔔 Deseja receber notificações do navegador quando aparecerem novos sinais?')) {
+                        toggleBrowserNotifications();
+                    }
+                }, 2000);
+            }
         });
     </script>
 </body>

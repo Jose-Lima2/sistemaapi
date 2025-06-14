@@ -268,6 +268,7 @@ def api_adicionar_estrategia():
                 sequencia_cores=data.get('sequencia_cores'),
                 apostar_em=data.get('apostar_em'),
                 confianca=int(data.get('confianca', 70)),
+                sistema_gale=data.get('sistema_gale', 'G1'),
                 descricao=data.get('descricao', '')
             )
         elif tipo == 'numero':
@@ -278,6 +279,7 @@ def api_adicionar_estrategia():
                 pedras_esperar=int(data.get('pedras_esperar')),
                 apostar_em=data.get('apostar_em'),
                 confianca=int(data.get('confianca', 70)),
+                sistema_gale=data.get('sistema_gale', 'G1'),
                 descricao=data.get('descricao', '')
             )
         elif tipo == 'contagem':
@@ -289,6 +291,51 @@ def api_adicionar_estrategia():
                 apostar_em=data.get('apostar_em'),
                 confianca=int(data.get('confianca', 70)),
                 janela_analise=int(data.get('janela_analise', 10)),
+                sistema_gale=data.get('sistema_gale', 'G1'),
+                descricao=data.get('descricao', '')
+            )
+        elif tipo == 'minutos':
+            estrategia_id = analisador_completo.adicionar_estrategia_personalizada(
+                'minutos',
+                nome=data.get('nome'),
+                intervalo_minutos=int(data.get('intervalo_minutos')),
+                condicao_minutos=data.get('condicao_minutos'),
+                apostar_em=data.get('apostar_em'),
+                confianca=int(data.get('confianca', 70)),
+                sistema_gale=data.get('sistema_gale', 'G1'),
+                descricao=data.get('descricao', '')
+            )
+        elif tipo == 'pedras':
+            estrategia_id = analisador_completo.adicionar_estrategia_personalizada(
+                'pedras',
+                nome=data.get('nome'),
+                numero_pedras=int(data.get('numero_pedras')),
+                condicao_pedras=data.get('condicao_pedras'),
+                percentual_minimo=int(data.get('percentual_minimo', 70)),
+                apostar_em=data.get('apostar_em'),
+                confianca=int(data.get('confianca', 70)),
+                sistema_gale=data.get('sistema_gale', 'G1'),
+                descricao=data.get('descricao', '')
+            )
+        elif tipo == 'estrategia21':
+            estrategia_id = analisador_completo.adicionar_estrategia_personalizada(
+                'estrategia21',
+                nome=data.get('nome'),
+                quantidade_pedras_soma=data.get('quantidade_pedras_soma'),
+                pedras_esperar_soma21=int(data.get('pedras_esperar_soma21', 1)),
+                apostar_em=data.get('apostar_em'),
+                confianca=int(data.get('confianca', 70)),
+                sistema_gale=data.get('sistema_gale', 'G1'),
+                descricao=data.get('descricao', '')
+            )
+        elif tipo == 'branco':
+            estrategia_id = analisador_completo.adicionar_estrategia_personalizada(
+                'branco',
+                nome=data.get('nome'),
+                condicoes_branco=data.get('condicoes_branco'),
+                apostar_em='branco',  # Sempre branco para esta categoria
+                confianca=int(data.get('confianca', 70)),
+                sistema_gale=data.get('sistema_gale', 'G1'),
                 descricao=data.get('descricao', '')
             )
         else:

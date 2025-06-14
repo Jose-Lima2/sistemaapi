@@ -495,7 +495,7 @@ class EstrategiasPersonalizadas:
             return 'preto'
         return 'desconhecido'
     
-    def criar_estrategia_sequencia(self, nome, sequencia_cores, apostar_em, confianca, descricao=""):
+    def criar_estrategia_sequencia(self, nome, sequencia_cores, apostar_em, confianca, sistema_gale="G1", descricao=""):
         """
         Cria estratégia baseada em sequência de cores
         
@@ -513,6 +513,7 @@ class EstrategiasPersonalizadas:
             'sequencia_cores': sequencia_cores,
             'apostar_em': apostar_em,
             'confianca': max(1, min(100, confianca)),
+            'sistema_gale': sistema_gale,
             'descricao': descricao,
             'ativa': True,
             'acertos': 0,
@@ -522,7 +523,7 @@ class EstrategiasPersonalizadas:
         self.estrategias_customizadas.append(estrategia)
         return estrategia['id']
     
-    def criar_estrategia_numero_especifico(self, nome, numero_gatilho, pedras_esperar, apostar_em, confianca, descricao=""):
+    def criar_estrategia_numero_especifico(self, nome, numero_gatilho, pedras_esperar, apostar_em, confianca, sistema_gale="G1", descricao=""):
         """
         Cria estratégia baseada em número específico (como as estratégias do 6 e 7)
         
@@ -542,6 +543,7 @@ class EstrategiasPersonalizadas:
             'pedras_esperar': pedras_esperar,
             'apostar_em': apostar_em,
             'confianca': max(1, min(100, confianca)),
+            'sistema_gale': sistema_gale,
             'descricao': descricao,
             'ativa': True,
             'acertos': 0,
@@ -551,7 +553,7 @@ class EstrategiasPersonalizadas:
         self.estrategias_customizadas.append(estrategia)
         return estrategia['id']
     
-    def criar_estrategia_contagem(self, nome, cor_contar, quantidade_minima, apostar_em, confianca, janela_analise=10, descricao=""):
+    def criar_estrategia_contagem(self, nome, cor_contar, quantidade_minima, apostar_em, confianca, janela_analise=10, sistema_gale="G1", descricao=""):
         """
         Cria estratégia baseada em contagem de cores
         
@@ -573,6 +575,134 @@ class EstrategiasPersonalizadas:
             'apostar_em': apostar_em,
             'confianca': max(1, min(100, confianca)),
             'janela_analise': janela_analise,
+            'sistema_gale': sistema_gale,
+            'descricao': descricao,
+            'ativa': True,
+            'acertos': 0,
+            'tentativas': 0
+        }
+        
+        self.estrategias_customizadas.append(estrategia)
+        return estrategia['id']
+    
+    def criar_estrategia_minutos(self, nome, intervalo_minutos, condicao_minutos, apostar_em, confianca, sistema_gale="G1", descricao=""):
+        """
+        Cria estratégia baseada em intervalos de tempo
+        
+        Args:
+            nome: Nome da estratégia
+            intervalo_minutos: Intervalo em minutos para análise
+            condicao_minutos: Condição para apostar ('sempre', 'sem_branco', 'maioria_vermelha', 'maioria_preta')
+            apostar_em: Cor para apostar ('vermelho', 'preto' ou 'branco')
+            confianca: Nível de confiança (1-100)
+            sistema_gale: Sistema de gale (G1, G2, G3, G4, G5)
+            descricao: Descrição da estratégia
+        """
+        import time
+        
+        estrategia = {
+            'id': len(self.estrategias_customizadas) + 1,
+            'nome': nome,
+            'tipo': 'minutos',
+            'intervalo_minutos': intervalo_minutos,
+            'condicao_minutos': condicao_minutos,
+            'apostar_em': apostar_em,
+            'confianca': max(1, min(100, confianca)),
+            'sistema_gale': sistema_gale,
+            'descricao': descricao,
+            'ativa': True,
+            'acertos': 0,
+            'tentativas': 0,
+            'ultimo_sinal': 0  # Timestamp do último sinal
+        }
+        
+        self.estrategias_customizadas.append(estrategia)
+        return estrategia['id']
+    
+    def criar_estrategia_pedras(self, nome, numero_pedras, condicao_pedras, percentual_minimo, apostar_em, confianca, sistema_gale="G1", descricao=""):
+        """
+        Cria estratégia baseada em número de pedras
+        
+        Args:
+            nome: Nome da estratégia
+            numero_pedras: Número de pedras para analisar
+            condicao_pedras: Condição para sinal ('sem_branco', 'maioria_vermelha', 'maioria_preta', 'sequencia_vermelha', 'sequencia_preta')
+            percentual_minimo: Percentual mínimo para gerar sinal
+            apostar_em: Cor para apostar ('vermelho', 'preto' ou 'branco')
+            confianca: Nível de confiança (1-100)
+            sistema_gale: Sistema de gale (G1, G2, G3, G4, G5)
+            descricao: Descrição da estratégia
+        """
+        estrategia = {
+            'id': len(self.estrategias_customizadas) + 1,
+            'nome': nome,
+            'tipo': 'pedras',
+            'numero_pedras': numero_pedras,
+            'condicao_pedras': condicao_pedras,
+            'percentual_minimo': percentual_minimo,
+            'apostar_em': apostar_em,
+            'confianca': max(1, min(100, confianca)),
+            'sistema_gale': sistema_gale,
+            'descricao': descricao,
+            'ativa': True,
+            'acertos': 0,
+            'tentativas': 0
+        }
+        
+        self.estrategias_customizadas.append(estrategia)
+        return estrategia['id']
+    
+    def criar_estrategia_21(self, nome, quantidade_pedras_soma, pedras_esperar_soma21, apostar_em, confianca, sistema_gale="G1", descricao=""):
+        """
+        Cria estratégia 21 - quando soma de 2 ou 3 pedras = 21, pode sair branco
+        
+        Args:
+            nome: Nome da estratégia
+            quantidade_pedras_soma: '2', '3' ou 'ambos'
+            pedras_esperar_soma21: Quantas pedras esperar após soma = 21
+            apostar_em: Cor para apostar ('vermelho', 'preto' ou 'branco')
+            confianca: Nível de confiança (1-100)
+            sistema_gale: Sistema de gale (G1, G2, G3, G4, G5)
+            descricao: Descrição da estratégia
+        """
+        estrategia = {
+            'id': len(self.estrategias_customizadas) + 1,
+            'nome': nome,
+            'tipo': 'estrategia21',
+            'quantidade_pedras_soma': quantidade_pedras_soma,
+            'pedras_esperar_soma21': pedras_esperar_soma21,
+            'apostar_em': apostar_em,
+            'confianca': max(1, min(100, confianca)),
+            'sistema_gale': sistema_gale,
+            'descricao': descricao,
+            'ativa': True,
+            'acertos': 0,
+            'tentativas': 0
+        }
+        
+        self.estrategias_customizadas.append(estrategia)
+        return estrategia['id']
+    
+    def criar_estrategia_branco(self, nome, condicoes_branco, apostar_em, confianca, sistema_gale="G1", descricao=""):
+        """
+        Cria estratégia de branco com múltiplas condições flexíveis
+        
+        Args:
+            nome: Nome da estratégia
+            condicoes_branco: Dict com condições (cores, numeros, soma, tempo)
+            apostar_em: Cor para apostar (sempre 'branco' para esta estratégia)
+            confianca: Nível de confiança (1-100)
+            sistema_gale: Sistema de gale (G1, G2, G3, G4, G5)
+            descricao: Descrição da estratégia
+        """
+        estrategia = {
+            'id': len(self.estrategias_customizadas) + 1,
+            'nome': nome,
+            'tipo': 'branco',
+            'condicoes_branco': condicoes_branco,
+            'apostar_em': 'branco',  # Sempre branco para esta categoria
+            'confianca': max(1, min(100, confianca)),
+            'sistema_gale': sistema_gale,
             'descricao': descricao,
             'ativa': True,
             'acertos': 0,
@@ -601,7 +731,8 @@ class EstrategiasPersonalizadas:
                 'sinal': estrategia['apostar_em'],
                 'confianca': estrategia['confianca'],
                 'estrategia': f"{estrategia['nome']} (Personalizada)",
-                'protecao': 'branco',
+                'protecao': 'branco' if estrategia['apostar_em'] != 'branco' else None,
+                'gale': estrategia.get('sistema_gale', 'G1'),
                 'estrategia_id': estrategia['id']
             }
         
@@ -625,7 +756,8 @@ class EstrategiasPersonalizadas:
                         'sinal': estrategia['apostar_em'],
                         'confianca': estrategia['confianca'],
                         'estrategia': f"{estrategia['nome']} (Personalizada)",
-                        'protecao': 'branco',
+                        'protecao': 'branco' if estrategia['apostar_em'] != 'branco' else None,
+                        'gale': estrategia.get('sistema_gale', 'G1'),
                         'estrategia_id': estrategia['id']
                     }
         
@@ -652,11 +784,335 @@ class EstrategiasPersonalizadas:
                 'sinal': estrategia['apostar_em'],
                 'confianca': estrategia['confianca'],
                 'estrategia': f"{estrategia['nome']} (Personalizada - {contagem}/{janela} {cor_contar})",
-                'protecao': 'branco',
+                'protecao': 'branco' if estrategia['apostar_em'] != 'branco' else None,
+                'gale': estrategia.get('sistema_gale', 'G1'),
                 'estrategia_id': estrategia['id']
             }
         
         return None
+    
+    def analisar_estrategia_minutos(self, estrategia):
+        """Analisa estratégia baseada em minutos"""
+        import time
+        
+        intervalo_minutos = estrategia['intervalo_minutos']
+        condicao = estrategia['condicao_minutos']
+        ultimo_sinal = estrategia.get('ultimo_sinal', 0)
+        
+        # Verificar se já passou o tempo necessário desde o último sinal
+        tempo_atual = time.time()
+        tempo_decorrido = (tempo_atual - ultimo_sinal) / 60  # em minutos
+        
+        if tempo_decorrido < intervalo_minutos:
+            return None
+        
+        # Analisar condição baseada nos últimos resultados
+        if len(self.historico) < 5:  # Mínimo de resultados para análise
+            return None
+        
+        # Analisar últimos 10 resultados ou o que tiver disponível
+        janela_analise = min(10, len(self.historico))
+        cores_recentes = []
+        for numero in self.historico[-janela_analise:]:
+            cores_recentes.append(self.cor_do_numero(numero))
+        
+        sinal_valido = False
+        
+        if condicao == 'sempre':
+            sinal_valido = True
+        elif condicao == 'sem_branco':
+            sinal_valido = 'branco' not in cores_recentes
+        elif condicao == 'maioria_vermelha':
+            vermelhos = cores_recentes.count('vermelho')
+            sinal_valido = vermelhos > len(cores_recentes) / 2
+        elif condicao == 'maioria_preta':
+            pretos = cores_recentes.count('preto')
+            sinal_valido = pretos > len(cores_recentes) / 2
+        
+        if sinal_valido:
+            # Atualizar timestamp do último sinal
+            estrategia['ultimo_sinal'] = tempo_atual
+            
+            return {
+                'sinal': estrategia['apostar_em'],
+                'confianca': estrategia['confianca'],
+                'estrategia': f"{estrategia['nome']} (Minutos - {condicao})",
+                'protecao': 'branco' if estrategia['apostar_em'] != 'branco' else None,
+                'gale': estrategia.get('sistema_gale', 'G1'),
+                'estrategia_id': estrategia['id']
+            }
+        
+        return None
+    
+    def analisar_estrategia_pedras(self, estrategia):
+        """Analisa estratégia baseada em número de pedras"""
+        numero_pedras = estrategia['numero_pedras']
+        condicao = estrategia['condicao_pedras']
+        percentual_minimo = estrategia['percentual_minimo']
+        
+        if len(self.historico) < numero_pedras:
+            return None
+        
+        # Analisar últimas X pedras
+        cores_recentes = []
+        for numero in self.historico[-numero_pedras:]:
+            cores_recentes.append(self.cor_do_numero(numero))
+        
+        sinal_valido = False
+        detalhes_condicao = ""
+        
+        if condicao == 'sem_branco':
+            brancos = cores_recentes.count('branco')
+            percentual_brancos = (brancos / len(cores_recentes)) * 100
+            sinal_valido = percentual_brancos == 0
+            detalhes_condicao = f"0% brancos"
+            
+        elif condicao == 'maioria_vermelha':
+            vermelhos = cores_recentes.count('vermelho')
+            percentual_vermelhos = (vermelhos / len(cores_recentes)) * 100
+            sinal_valido = percentual_vermelhos >= percentual_minimo
+            detalhes_condicao = f"{percentual_vermelhos:.1f}% vermelhos"
+            
+        elif condicao == 'maioria_preta':
+            pretos = cores_recentes.count('preto')
+            percentual_pretos = (pretos / len(cores_recentes)) * 100
+            sinal_valido = percentual_pretos >= percentual_minimo
+            detalhes_condicao = f"{percentual_pretos:.1f}% pretos"
+            
+        elif condicao == 'sequencia_vermelha':
+            # Contar sequência de vermelhos no final
+            sequencia_vermelha = 0
+            for cor in reversed(cores_recentes):
+                if cor == 'vermelho':
+                    sequencia_vermelha += 1
+                else:
+                    break
+            percentual_sequencia = (sequencia_vermelha / len(cores_recentes)) * 100
+            sinal_valido = percentual_sequencia >= percentual_minimo
+            detalhes_condicao = f"{sequencia_vermelha} vermelhos seguidos"
+            
+        elif condicao == 'sequencia_preta':
+            # Contar sequência de pretos no final
+            sequencia_preta = 0
+            for cor in reversed(cores_recentes):
+                if cor == 'preto':
+                    sequencia_preta += 1
+                else:
+                    break
+            percentual_sequencia = (sequencia_preta / len(cores_recentes)) * 100
+            sinal_valido = percentual_sequencia >= percentual_minimo
+            detalhes_condicao = f"{sequencia_preta} pretos seguidos"
+        
+        if sinal_valido:
+            return {
+                'sinal': estrategia['apostar_em'],
+                'confianca': estrategia['confianca'],
+                'estrategia': f"{estrategia['nome']} (Pedras - {detalhes_condicao})",
+                'protecao': 'branco' if estrategia['apostar_em'] != 'branco' else None,
+                'gale': estrategia.get('sistema_gale', 'G1'),
+                'estrategia_id': estrategia['id']
+            }
+        
+        return None
+    
+    def analisar_estrategia_21(self, estrategia):
+        """Analisa estratégia 21 - soma de pedras = 21"""
+        quantidade_pedras_soma = estrategia['quantidade_pedras_soma']
+        pedras_esperar = estrategia['pedras_esperar_soma21']
+        
+        # Verificar se temos histórico suficiente
+        min_historico = 5 if quantidade_pedras_soma == 'ambos' else (3 if quantidade_pedras_soma == '2' else 4)
+        if len(self.historico) < min_historico:
+            return None
+        
+        # Procurar por somas = 21 no histórico
+        for i in range(len(self.historico) - pedras_esperar):
+            soma_encontrada = False
+            detalhes_soma = ""
+            
+            # Verificar soma de 2 pedras
+            if quantidade_pedras_soma in ['2', 'ambos'] and i >= 1:
+                soma_2 = self.historico[i-1] + self.historico[i]
+                if soma_2 == 21:
+                    soma_encontrada = True
+                    detalhes_soma = f"Soma 2 pedras: {self.historico[i-1]}+{self.historico[i]}=21"
+            
+            # Verificar soma de 3 pedras
+            if quantidade_pedras_soma in ['3', 'ambos'] and i >= 2 and not soma_encontrada:
+                soma_3 = self.historico[i-2] + self.historico[i-1] + self.historico[i]
+                if soma_3 == 21:
+                    soma_encontrada = True
+                    detalhes_soma = f"Soma 3 pedras: {self.historico[i-2]}+{self.historico[i-1]}+{self.historico[i]}=21"
+            
+            if soma_encontrada:
+                # Verificar se já passaram as pedras necessárias
+                pedras_apos_soma = len(self.historico) - i - 1
+                if pedras_apos_soma == pedras_esperar:
+                    return {
+                        'sinal': estrategia['apostar_em'],
+                        'confianca': estrategia['confianca'],
+                        'estrategia': f"{estrategia['nome']} ({detalhes_soma})",
+                        'protecao': None,  # Estratégia 21 não tem proteção específica
+                        'gale': estrategia.get('sistema_gale', 'G1'),
+                        'estrategia_id': estrategia['id']
+                    }
+        
+        return None
+    
+    def analisar_estrategia_branco(self, estrategia):
+        """Analisa estratégia de branco com condições flexíveis"""
+        condicoes = estrategia['condicoes_branco']
+        condicoes_atendidas = []
+        
+        # Verificar condições de cores
+        if 'cores' in condicoes:
+            if self._verificar_condicao_cores(condicoes['cores']):
+                condicoes_atendidas.append("cores")
+        
+        # Verificar condições de números
+        if 'numeros' in condicoes:
+            if self._verificar_condicao_numeros(condicoes['numeros']):
+                condicoes_atendidas.append("números")
+        
+        # Verificar condições de soma
+        if 'soma' in condicoes:
+            if self._verificar_condicao_soma(condicoes['soma']):
+                condicoes_atendidas.append("soma")
+        
+        # Verificar condições de tempo
+        if 'tempo' in condicoes:
+            if self._verificar_condicao_tempo(condicoes['tempo']):
+                condicoes_atendidas.append("tempo")
+        
+        # Se todas as condições definidas foram atendidas, gerar sinal
+        total_condicoes = len(condicoes)
+        if len(condicoes_atendidas) == total_condicoes and total_condicoes > 0:
+            detalhes = f"Condições atendidas: {', '.join(condicoes_atendidas)}"
+            return {
+                'sinal': 'branco',
+                'confianca': estrategia['confianca'],
+                'estrategia': f"{estrategia['nome']} ({detalhes})",
+                'protecao': None,
+                'gale': estrategia.get('sistema_gale', 'G1'),
+                'estrategia_id': estrategia['id']
+            }
+        
+        return None
+    
+    def _verificar_condicao_cores(self, condicao_cores):
+        """Verifica condições relacionadas a cores"""
+        condicao = condicao_cores['condicao']
+        quantidade = condicao_cores['quantidade']
+        
+        if len(self.historico) < quantidade:
+            return False
+        
+        cores_recentes = []
+        for numero in self.historico[-quantidade:]:
+            cores_recentes.append(self.cor_do_numero(numero))
+        
+        if condicao == 'sequencia_vermelha':
+            return all(cor == 'vermelho' for cor in cores_recentes[-quantidade:])
+        elif condicao == 'sequencia_preta':
+            return all(cor == 'preto' for cor in cores_recentes[-quantidade:])
+        elif condicao == 'alternancia':
+            if quantidade < 4:
+                return False
+            padrao = ['vermelho', 'preto', 'vermelho', 'preto']
+            return cores_recentes[-4:] == padrao
+        elif condicao == 'maioria_vermelha':
+            vermelhos = cores_recentes.count('vermelho')
+            return vermelhos > len(cores_recentes) / 2
+        elif condicao == 'maioria_preta':
+            pretos = cores_recentes.count('preto')
+            return pretos > len(cores_recentes) / 2
+        elif condicao == 'sem_branco':
+            return 'branco' not in cores_recentes
+        
+        return False
+    
+    def _verificar_condicao_numeros(self, condicao_numeros):
+        """Verifica condições relacionadas a números"""
+        condicao = condicao_numeros['condicao']
+        numeros_especificos = condicao_numeros.get('numeros_especificos', '')
+        
+        if len(self.historico) < 5:
+            return False
+        
+        numeros_recentes = self.historico[-10:]  # Últimos 10 números
+        
+        if condicao == 'numero_especifico' and numeros_especificos:
+            numeros_lista = [int(n.strip()) for n in numeros_especificos.split(',') if n.strip().isdigit()]
+            return any(num in numeros_recentes for num in numeros_lista)
+        elif condicao == 'numeros_pares':
+            pares = sum(1 for num in numeros_recentes if num % 2 == 0 and num != 0)
+            return pares > len(numeros_recentes) / 2
+        elif condicao == 'numeros_impares':
+            impares = sum(1 for num in numeros_recentes if num % 2 == 1)
+            return impares > len(numeros_recentes) / 2
+        elif condicao == 'numeros_baixos':
+            baixos = sum(1 for num in numeros_recentes if 1 <= num <= 7)
+            return baixos > len(numeros_recentes) / 2
+        elif condicao == 'numeros_altos':
+            altos = sum(1 for num in numeros_recentes if 8 <= num <= 14)
+            return altos > len(numeros_recentes) / 2
+        
+        return False
+    
+    def _verificar_condicao_soma(self, condicao_soma):
+        """Verifica condições relacionadas a soma"""
+        condicao = condicao_soma['condicao']
+        valor = condicao_soma.get('valor')
+        pedras = condicao_soma['pedras']
+        
+        if len(self.historico) < pedras:
+            return False
+        
+        numeros_soma = self.historico[-pedras:]
+        soma_atual = sum(numeros_soma)
+        
+        if condicao == 'soma_especifica':
+            return soma_atual == valor if valor else False
+        elif condicao == 'soma_par':
+            return soma_atual % 2 == 0
+        elif condicao == 'soma_impar':
+            return soma_atual % 2 == 1
+        elif condicao == 'soma_alta':
+            return soma_atual > 15
+        elif condicao == 'soma_baixa':
+            return soma_atual < 15
+        
+        return False
+    
+    def _verificar_condicao_tempo(self, condicao_tempo):
+        """Verifica condições relacionadas a tempo"""
+        import datetime
+        
+        condicao = condicao_tempo['condicao']
+        valor = condicao_tempo.get('valor', '')
+        
+        agora = datetime.datetime.now()
+        
+        if condicao == 'minuto_par':
+            return agora.minute % 2 == 0
+        elif condicao == 'minuto_impar':
+            return agora.minute % 2 == 1
+        elif condicao == 'hora_especifica':
+            if ':' in valor:
+                try:
+                    hora_alvo, minuto_alvo = map(int, valor.split(':'))
+                    return agora.hour == hora_alvo and agora.minute == minuto_alvo
+                except:
+                    return False
+        elif condicao == 'soma_hora_minuto':
+            try:
+                soma_alvo = int(valor)
+                soma_atual = agora.hour + agora.minute
+                return soma_atual == soma_alvo
+            except:
+                return False
+        
+        return False
     
     def analisar_estrategias_personalizadas(self):
         """Analisa todas as estratégias personalizadas ativas"""
@@ -674,6 +1130,14 @@ class EstrategiasPersonalizadas:
                 sinal = self.analisar_estrategia_numero_especifico(estrategia)
             elif estrategia['tipo'] == 'contagem':
                 sinal = self.analisar_estrategia_contagem(estrategia)
+            elif estrategia['tipo'] == 'minutos':
+                sinal = self.analisar_estrategia_minutos(estrategia)
+            elif estrategia['tipo'] == 'pedras':
+                sinal = self.analisar_estrategia_pedras(estrategia)
+            elif estrategia['tipo'] == 'estrategia21':
+                sinal = self.analisar_estrategia_21(estrategia)
+            elif estrategia['tipo'] == 'branco':
+                sinal = self.analisar_estrategia_branco(estrategia)
             
             if sinal:
                 sinais_encontrados.append(sinal)
@@ -773,5 +1237,13 @@ class AnalisadorCompleto:
             return self.estrategias_personalizadas.criar_estrategia_numero_especifico(**kwargs)
         elif tipo == 'contagem':
             return self.estrategias_personalizadas.criar_estrategia_contagem(**kwargs)
+        elif tipo == 'minutos':
+            return self.estrategias_personalizadas.criar_estrategia_minutos(**kwargs)
+        elif tipo == 'pedras':
+            return self.estrategias_personalizadas.criar_estrategia_pedras(**kwargs)
+        elif tipo == 'estrategia21':
+            return self.estrategias_personalizadas.criar_estrategia_21(**kwargs)
+        elif tipo == 'branco':
+            return self.estrategias_personalizadas.criar_estrategia_branco(**kwargs)
         
         return None 
